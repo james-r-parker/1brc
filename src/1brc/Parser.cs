@@ -21,7 +21,7 @@ public class Parser(string fileName)
         }
 
         await Task.WhenAll(tasks);
-        
+
         return tasks.SelectMany(x => x.Result)
             .GroupBy(x => Encoding.UTF8.GetString(x.Key))
             .Select(x =>
@@ -34,7 +34,9 @@ public class Parser(string fileName)
                     Max = x.Max(y => y.Value.Max),
                     Sum = x.Sum(y => y.Value.Sum),
                 };
-            });
+            })
+            .OrderBy(x => x.Name)
+            .ToList();
     }
 
     private FileChunk[] GetChunks()
