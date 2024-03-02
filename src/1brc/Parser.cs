@@ -39,6 +39,9 @@ public class Parser(string fileName)
             .ToList();
     }
 
+    /// <summary>
+    /// Breaks the file down into chunks for parallel processing.
+    /// </summary>
     private FileChunk[] GetChunks()
     {
         var chunks = new FileChunk[Environment.ProcessorCount];
@@ -50,7 +53,7 @@ public class Parser(string fileName)
         reader.Position = chunkSize;
         while (reader.Read(buffer) > 0)
         {
-            if (buffer[0] == 10)
+            if (buffer[0] == NewLine)
             {
                 chunks[chunk] = new FileChunk(start, reader.Position - start);
                 start = reader.Position;
@@ -68,6 +71,9 @@ public class Parser(string fileName)
         return chunks;
     }
 
+    /// <summary>
+    /// Process a single chunk of the file.
+    /// </summary>
     private Dictionary<byte[], Location> ProcessChunk(FileChunk chunk)
     {
         Dictionary<byte[], Location> data = new(10000, new BytesComparer());
