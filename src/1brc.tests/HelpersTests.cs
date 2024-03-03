@@ -1,10 +1,11 @@
-using System.Linq;
 using System.Text;
 
 namespace _1brc.tests;
 
 public class HelpersTests
 {
+    private readonly DoubleComparer _comparer = new();
+    
     [Fact]
     public void Test1()
     {
@@ -18,7 +19,7 @@ public class HelpersTests
             var bytes = Encoding.UTF8.GetBytes(n).AsSpan();
             var result = Helpers.ParseDouble(bytes);
             var expected = double.Parse(Encoding.UTF8.GetString(bytes));
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result,_comparer);
         }
         
         foreach (var n in number)
@@ -26,7 +27,7 @@ public class HelpersTests
             var bytes = Encoding.UTF8.GetBytes($"-{n}").AsSpan();
             var result = Helpers.ParseDouble(bytes);
             var expected = double.Parse(Encoding.UTF8.GetString(bytes));
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result,_comparer);
         }
     }
 }

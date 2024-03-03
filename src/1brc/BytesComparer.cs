@@ -17,8 +17,8 @@ public class BytesComparer : IEqualityComparer<byte[]>
     {
         unchecked
         {
-            int hash = 0;
-            for (int i = 0; i < obj.Length; i++)
+            int hash = obj.Length;
+            for (int i = 0; i < obj.Length; i += 2)
             {
                 hash += obj[i] * (1 << i);
             }

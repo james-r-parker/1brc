@@ -1,14 +1,20 @@
 ﻿using System.Text;
+using System.Text.Json.Nodes;
 
 namespace _1brc;
 
 public class Parser(string fileName)
 {
     private const int BufferSize = 8192;
-    private const int ChunkSize = 128;
+    private const ushort ChunkSize = 128;
 
-    private const int NewLine = 10;
-    private const int Separator = 59;
+    private const byte NewLine = (byte)'\n';
+    private const byte Separator = (byte)';';
+    private const byte Dot = (byte)'.';
+    private const byte A = (byte)'A';
+    private const byte Z = (byte)'Z';
+    private const byte a = (byte)'a';
+    private const byte z = (byte)'z';
 
     public async Task<IEnumerable<Output>> Run()
     {
@@ -46,14 +52,27 @@ public class Parser(string fileName)
     {
         var chunks = new FileChunk[Environment.ProcessorCount];
         using var reader = OpenReader(FileOptions.RandomAccess);
-        var chunkSize = reader.Length / chunks.Length;
-        var buffer = new byte[1];
-        var start = 0L;
-        var chunk = 0;
+        long chunkSize = reader.Length / chunks.Length;
+        byte[] buffer = new byte[1];
+        long start = 0L;
+        ushort chunk = 0;
         reader.Position = chunkSize;
         while (reader.Read(buffer) > 0)
         {
-            if (buffer[0] == NewLine)
+            if (buffer[0] == Dot)
+            {
+                chunks[chunk] = new FileChunk(start, (reader.Position + 2) - start);
+                start = reader.Position + 2;
+                chunk++;
+                if (reader.Position + chunkSize > reader.Length)
+                {
+                    chunks[chunk] = new FileChunk(start, reader.Length - start);
+                    break;
+                }
+
+                reader.Position += chunkSize;
+            }
+            else if (buffer[0] == NewLine)
             {
                 chunks[chunk] = new FileChunk(start, reader.Position - start);
                 start = reader.Position;
@@ -66,6 +85,19 @@ public class Parser(string fileName)
 
                 reader.Position += chunkSize;
             }
+            else
+                switch (buffer[0])
+                {
+                    case Separator:
+                        reader.Position += 1;
+                        break;
+                    case >= A and <= Z:
+                        reader.Position += 3;
+                        break;
+                    case >= a and <= z:
+                        reader.Position += 2;
+                        break;
+                }
         }
 
         return chunks;
@@ -76,18 +108,24 @@ public class Parser(string fileName)
     /// </summary>
     private Dictionary<byte[], Location> ProcessChunk(FileChunk chunk)
     {
-        Dictionary<byte[], Location> data = new(10000, new BytesComparer());
+        Dictionary<byte[], Location> data = new(512, new BytesComparer());
 
         using var reader = OpenReader();
         reader.Position = chunk.Start;
         Span<byte> buffer = new byte[ChunkSize];
         long end = chunk.Start + chunk.Count;
-        int index = 0;
-        int separator = 0;
+        ushort index = 0;
+        ushort separator = 0;
         while (reader.Position < end)
         {
             buffer[index] = (byte)reader.ReadByte();
-            if (buffer[index] == Separator) separator = index;
+            if (buffer[index] == Separator)
+            {
+                unchecked
+                {
+                    separator = index;
+                }
+            }
             else if (buffer[index] == NewLine)
             {
                 var name = new byte[separator];
@@ -104,11 +142,18 @@ public class Parser(string fileName)
                     data.Add(name, new Location(temp));
                 }
 
-                index = 0;
+                unchecked
+                {
+                    index = 0;
+                }
+
                 continue;
             }
 
-            index++;
+            unchecked
+            {
+                index++;
+            }
         }
 
         return data;

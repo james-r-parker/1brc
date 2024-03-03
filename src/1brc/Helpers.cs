@@ -4,22 +4,46 @@ namespace _1brc;
 
 public static class Helpers
 {
-    private const int Minus = 45;
-    private const int Dot = 46;
-    private const int Zero = 48;
+    private const byte DecimalPoint = (byte)'.';
+    private const int Minus = (byte)'-';
+    private const int Zero = (byte)'0';
+    
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double ParseDouble(ReadOnlySpan<byte> span)
+    public static double ParseDouble(ReadOnlySpan<byte> bytes)
     {
-        var temp = 0.0;
-        int dec = 0;
-        bool isNegative = span[0] == Minus;
-        for (int i = (isNegative ? 1 : 0); i < span.Length; i++)
+        var decimalIndex = bytes.IndexOf(DecimalPoint);
+        var isNegative = bytes[0] == Minus;
+
+        if (isNegative)
         {
-            if (span[i] == Dot) dec = span.Length - i - 1;
-            else temp = temp * 10 + (span[i] - Zero);
+            return decimalIndex switch
+            {
+                3
+                    => -1
+                       * (
+                           (bytes[decimalIndex - 2] - Zero) * 10
+                           + (bytes[decimalIndex - 1] - Zero)
+                           + (bytes[decimalIndex + 1] - Zero) * 0.1
+                       ),
+                2
+                    => -1
+                       * (
+                           (bytes[decimalIndex - 1] - Zero)
+                           + (bytes[decimalIndex + 1] - Zero) * 0.1
+                       ),
+                _ => double.Parse(bytes)
+            };
         }
 
-        return isNegative ? -temp / Math.Pow(10, dec) : temp / Math.Pow(10, dec);
+        return decimalIndex switch
+        {
+            2
+                => (bytes[decimalIndex - 2] - Zero) * 10
+                   + (bytes[decimalIndex - 1] - Zero)
+                   + (bytes[decimalIndex + 1] - Zero) * 0.1,
+            1 => (bytes[decimalIndex - 1] - Zero) + (bytes[decimalIndex + 1] - Zero) * 0.1,
+            _ => double.Parse(bytes)
+        };
     }
 }

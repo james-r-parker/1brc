@@ -26,9 +26,13 @@ public class Location(double temp)
 
     public void Update(double temp)
     {
-        Count++;
-        Min = Math.Min(Min, temp);
-        Max = Math.Max(Max, temp);
+        unchecked
+        {
+            Count++;
+            Min = Min < temp ? Min : temp;
+            Max = Max > temp ? Max : temp;
+        }
+
         Sum += temp;
     }
 }

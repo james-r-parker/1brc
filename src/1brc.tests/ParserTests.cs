@@ -4,6 +4,7 @@ namespace _1brc.tests;
 
 public class ParserTests
 {
+    private readonly DoubleComparer _comparer = new();
     private const string FileName = @"C:\code\1brc\data\measurements-1000000.txt";
     
     [Fact]
@@ -45,10 +46,10 @@ public class ParserTests
         
         foreach (var output in result)
         {
-            Assert.Equal(data[output.Name].Min, output.Min);
-            Assert.Equal(data[output.Name].Max, output.Max);
-            Assert.Equal(data[output.Name].Avg, output.Avg);
-            Assert.Equal(data[output.Name].Count, output.Count);
+            Assert.Equal(data[output.Name].Min, output.Min, _comparer);
+            Assert.Equal(data[output.Name].Max, output.Max, _comparer);
+            Assert.Equal(data[output.Name].Avg, output.Avg, _comparer);
+            Assert.Equal(data[output.Name].Count, output.Count, _comparer);
         }
     }
 }
