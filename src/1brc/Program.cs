@@ -4,7 +4,7 @@ using _1brc;
 var stopWatch = new Stopwatch();
 stopWatch.Start();
 var parser = new Parser(@"C:\code\1brc\data\measurements-1000000000.txt");
-var result = await parser.Run();
+var result = parser.Run();
 stopWatch.Stop();
 Console.WriteLine($"Time: {stopWatch.Elapsed}");
 
