@@ -1,14 +1,19 @@
 ﻿using System.Diagnostics;
 using _1brc;
 
-var stopWatch = new Stopwatch();
-stopWatch.Start();
-var parser = new Parser(@"C:\code\1brc\data\measurements-1000000000.txt");
-var result = parser.Run();
-stopWatch.Stop();
-Console.WriteLine($"Time: {stopWatch.Elapsed}");
+const string fileName = @"C:\code\1brc\data\measurements-1000000000.txt";
+const int runs = 5;
+List<TimeSpan> times = new();
 
-foreach (var output in result.Take(10))
-{
-    Console.WriteLine($"{output.Name}={output.Min}/{output.Avg}/{output.Max}");
+for(var i = 0; i < runs; i++) {
+    var stopWatch = new Stopwatch();
+    stopWatch.Start();
+    var parser = new Parser(fileName);
+    var result = parser.Run();
+    stopWatch.Stop();
+    times.Add(stopWatch.Elapsed);
 }
+
+Console.WriteLine($"Avg time: {new TimeSpan((long)times.Average(x => x.Ticks))}");
+Console.WriteLine($"Min time: {new TimeSpan((long)times.Min(x => x.Ticks))}");
+Console.WriteLine($"Max time: {new TimeSpan((long)times.Max(x => x.Ticks))}");
