@@ -4,7 +4,6 @@ public class BytesComparer : IEqualityComparer<byte[]>
 {
     public bool Equals(byte[]? x, byte[]? y)
     {
-        if (x.Length != y.Length) return false;
         for (int i = 0; i < x.Length; i++)
         {
             if (x[i] != y[i]) return false;
@@ -18,10 +17,8 @@ public class BytesComparer : IEqualityComparer<byte[]>
         unchecked
         {
             int hash = obj.Length;
-            for (int i = 0; i < obj.Length; i += 2)
-            {
-                hash += obj[i] * (1 << i);
-            }
+            hash += obj[2] * (1 << 2);
+            hash += obj[obj.Length - 1] * (1 << obj.Length - 1);
             return hash;
         }
     }

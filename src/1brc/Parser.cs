@@ -18,6 +18,10 @@ public class Parser(string fileName)
         foreach ((Thread Thread, Unit Unit) unit in GetChunks())
         {
             units.Add(unit);
+        }
+        
+        foreach ((Thread Thread, Unit Unit) unit in units)
+        {
             unit.Thread.Join();
         }
 
