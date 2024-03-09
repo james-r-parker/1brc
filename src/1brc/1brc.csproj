@@ -6,9 +6,6 @@
         <RootNamespace>_1brc</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <PublishAot>true</PublishAot>
-        <PublishReadyToRun>true</PublishReadyToRun>
-        <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
 
 </Project>

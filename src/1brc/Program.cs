@@ -9,11 +9,12 @@ for(var i = 0; i < runs; i++) {
     var stopWatch = new Stopwatch();
     stopWatch.Start();
     var parser = new Parser(fileName);
-    var result = parser.Run();
+    parser.Run();
+    var result = parser.GetResults();
     stopWatch.Stop();
     times.Add(stopWatch.Elapsed);
 }
 
-Console.WriteLine($"Avg time: {new TimeSpan((long)times.Average(x => x.Ticks))}");
-Console.WriteLine($"Min time: {new TimeSpan((long)times.Min(x => x.Ticks))}");
-Console.WriteLine($"Max time: {new TimeSpan((long)times.Max(x => x.Ticks))}");
+var sorted = times.OrderBy(x => x.Ticks).ToList();
+var avg = sorted.Skip(1).Take(runs - 2).Average(x => x.TotalSeconds);
+Console.WriteLine($"Score: {avg:F} Seconds");

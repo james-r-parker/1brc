@@ -12,34 +12,52 @@ public class Parser(string fileName)
     private const byte a = (byte)'a';
     private const byte z = (byte)'z';
 
-    public IEnumerable<Output> Run()
+    private readonly List<(Thread Thread, Unit Unit)> _units = [];
+
+    public void Run()
     {
-        List<(Thread Thread, Unit Unit)> units = new();
-        foreach ((Thread Thread, Unit Unit) unit in GetChunks())
+        foreach (var unit in GetChunks())
         {
-            units.Add(unit);
+            _units.Add(unit);
         }
-        
-        foreach ((Thread Thread, Unit Unit) unit in units)
+
+        foreach (var unit in _units)
         {
             unit.Thread.Join();
         }
+    }
 
-        return units.SelectMany(x => x.Unit.Results)
-            .GroupBy(x => Encoding.UTF8.GetString(x.Key))
-            .Select(x =>
+    public IEnumerable<Output> GetResults()
+    {
+        var output = new SortedDictionary<string, Output>();
+
+        foreach (var unit in _units)
+        {
+            foreach (Location result in unit.Unit.GetResults())
             {
-                return new Output()
+                var name = Encoding.UTF8.GetString(result.Name);
+                if (output.TryGetValue(name, out var o))
                 {
-                    Name = x.Key,
-                    Count = x.Sum(y => y.Value.Count),
-                    Min = x.Min(y => y.Value.Min),
-                    Max = x.Max(y => y.Value.Max),
-                    Sum = x.Sum(y => y.Value.Sum),
-                };
-            })
-            .OrderBy(x => x.Name)
-            .ToList();
+                    o.Count += result.Count;
+                    o.Min = Math.Min(o.Min, result.Min);
+                    o.Max = Math.Max(o.Max, result.Max);
+                    o.Sum += result.Sum;
+                }
+                else
+                {
+                    output.Add(name, new Output()
+                    {
+                        Name = name,
+                        Count = result.Count,
+                        Min = result.Min,
+                        Max = result.Max,
+                        Sum = result.Sum,
+                    });
+                }
+            }
+        }
+        
+        return output.Values;
     }
 
     /// <summary>
@@ -93,7 +111,7 @@ public class Parser(string fileName)
                 }
         }
     }
-    
+
     private (Thread Thread, Unit Unit) Start(FileChunk chunk)
     {
         var u = new Unit(fileName, chunk);

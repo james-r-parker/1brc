@@ -30,6 +30,12 @@ The task is to write a dotnet program which reads the file, calculates the min, 
 _Q: Why_ 1️⃣🐝🏎️ _?_\
 A: It's the abbreviation of the project name: **One** **B**illion **R**ow **C**hallenge.
 
+## Results
+
+* AMD Ryzen 9 7950X3D 16-Core Processor, 64GB RAM (5600MHz), 
+* Windows 11 (10.0.22631), .NET 8.0.201
+* Score: 4.85 Seconds
+
 ## 1BRC on the Web
 
 A list of external resources such as blog posts and videos, discussing 1BRC and specific implementations:

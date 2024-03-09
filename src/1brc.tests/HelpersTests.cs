@@ -5,9 +5,10 @@ namespace _1brc.tests;
 public class HelpersTests
 {
     private readonly DoubleComparer _comparer = new();
+    private const string FileName = @"C:\code\1brc\data\measurements-1000000.txt";
     
     [Fact]
-    public void Test1()
+    public void Numbers()
     {
         var number = Enumerable.Range(0, 100).SelectMany(x =>
         {
