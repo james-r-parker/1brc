@@ -4,7 +4,7 @@ namespace _1brc;
 
 public static class Helpers
 {
-    private const int BufferSize = 8192;
+    public const int FileBufferSize = 1024 * 2048;
     private const byte DecimalPoint = (byte)'.';
     private const int Minus = (byte)'-';
     private const int Zero = (byte)'0';
@@ -18,7 +18,7 @@ public static class Helpers
             Access = FileAccess.Read,
             Mode = FileMode.Open,
             Share = FileShare.Read,
-            BufferSize = BufferSize,
+            BufferSize = FileBufferSize,
         });
     }
 
