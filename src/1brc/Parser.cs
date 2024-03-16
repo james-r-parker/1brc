@@ -2,7 +2,7 @@
 
 namespace _1brc;
 
-public class Parser(string fileName)
+public class Parser(string fileName, int threads)
 {
     private const byte NewLine = (byte)'\n';
     private const byte Separator = (byte)';';
@@ -66,7 +66,7 @@ public class Parser(string fileName)
     private IEnumerable<(Thread Thread, Unit Unit)> GetChunks()
     {
         using var reader = Helpers.OpenReader(fileName, FileOptions.RandomAccess);
-        long chunkSize = reader.Length / Environment.ProcessorCount;
+        long chunkSize = reader.Length / threads;
         byte[] buffer = new byte[1];
         long start = 0L;
         reader.Position = chunkSize;

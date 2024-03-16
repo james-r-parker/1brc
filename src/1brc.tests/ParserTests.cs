@@ -7,17 +7,28 @@ public class ParserTests
     private readonly DoubleComparer _comparer = new();
     private const string FileName = @"C:\code\1brc\data\measurements-1000000.txt";
 
-    [Fact]
-    public void Count()
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    [InlineData(8)]
+    [InlineData(16)]
+    [InlineData(30)]
+    [InlineData(32)]
+    public void Count(int threads)
     {
-        var parser = new Parser(FileName);
+        var parser = new Parser(FileName, threads);
         parser.Run();
         var result = parser.GetResults();
         Assert.Equal(1000000, result.Sum(x => x.Count));
     }
 
-    [Fact]
-    public void Compare()
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    [InlineData(8)]
+    [InlineData(16)]
+    [InlineData(32)]
+    public void Compare(int threads)
     {
         Dictionary<string, Location> data = new();
         using var reader = new StreamReader(FileName);
@@ -38,7 +49,7 @@ public class ParserTests
 
         Assert.Equal(1000000, data.Select(x => x).Sum(x => x.Value.Count));
 
-        var parser = new Parser(FileName);
+        var parser = new Parser(FileName, threads);
         parser.Run();
         var result = parser.GetResults();
 
@@ -51,7 +62,7 @@ public class ParserTests
         {
             Assert.Equal(data[output.Name].Min, output.Min, _comparer);
             Assert.Equal(data[output.Name].Max, output.Max, _comparer);
-            Assert.Equal(data[output.Name].Avg, output.Avg, _comparer);
+            Assert.Equal(Math.Round(data[output.Name].Sum / data[output.Name].Count, 2, MidpointRounding.AwayFromZero), output.Avg, _comparer);
             Assert.Equal(data[output.Name].Count, output.Count, _comparer);
         }
     }

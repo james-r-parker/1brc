@@ -4,7 +4,7 @@ namespace _1brc;
 
 public static class Helpers
 {
-    private const int BufferSize = 8192;
+    private const int BufferSize = 1024 * 1024;
     private const byte DecimalPoint = (byte)'.';
     private const int Minus = (byte)'-';
     private const int Zero = (byte)'0';

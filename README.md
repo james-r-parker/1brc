@@ -27,14 +27,20 @@ The task is to write a dotnet program which reads the file, calculates the min, 
 {Abha=-23.0/18.0/59.2, Abidjan=-16.2/26.0/67.3, Abéché=-10.0/29.4/69.0, Accra=-10.1/26.4/66.4, Addis Ababa=-23.7/16.0/67.0, Adelaide=-27.8/17.3/58.5, ...}
 ```
 
+### Dataset
+```bash
+git clone https://huggingface.co/datasets/nietras/1brc.data
+```
+
 _Q: Why_ 1️⃣🐝🏎️ _?_\
 A: It's the abbreviation of the project name: **One** **B**illion **R**ow **C**hallenge.
 
 ## Results
 
-* AMD Ryzen 9 7950X3D 16-Core Processor, 64GB RAM (5600MHz), 
+* AMD Ryzen 9 7950X3D 16-Core Processor, 64GB RAM (5600MHz),
 * Windows 11 (10.0.22631), .NET 8.0.201
 * Score: 4.85 Seconds
+* Score: 1.52 Seconds
 
 ## 1BRC on the Web
 

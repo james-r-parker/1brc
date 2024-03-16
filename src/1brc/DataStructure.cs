@@ -11,9 +11,10 @@ public class DataStructure
     {
         for (var i = 0; i < Capacity; i++)
         {
-            if (_data[i] is not null)
+            var item = _data[i];
+            if (item is not null)
             {
-                foreach (var location in _data[i])
+                foreach (var location in item)
                 {
                     yield return location;
                 }
@@ -25,8 +26,9 @@ public class DataStructure
     {
         int hashCode = GenerateHashCode(name);
         int index = Math.Abs(hashCode % Capacity);
+        var item = _data[index];
 
-        if (_data[index] is null)
+        if (item is null)
         {
             var locationName = new byte[name.Length];
             name.CopyTo(locationName);
@@ -35,11 +37,12 @@ public class DataStructure
         }
 
         bool found = false;
-        for (var i = 0; i < _data[index].Count; i++)
+        for (var i = 0; i < item.Count; i++)
         {
-            if (_data[index][i].HashCode == hashCode && SequenceEqual(name, _data[index][i].Name))
+            var location = item[i];
+            if (Equals(location, hashCode, name))
             {
-                _data[index][i].Update(temp);
+                location.Update(temp);
                 found = true;
                 break;
             }
@@ -49,20 +52,14 @@ public class DataStructure
         {
             var locationName = new byte[name.Length];
             name.CopyTo(locationName);
-            _data[index].Add(new(locationName, hashCode, temp));
+            item.Add(new(locationName, hashCode, temp));
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int GenerateHashCode(Span<byte> bytes)
+    public static bool Equals(Location location, int hashCode, Span<byte> bytes)
     {
-        unchecked
-        {
-            int hash = bytes.Length;
-            hash += bytes[0] * (1 << 0);
-            hash += bytes[^1] * (1 << bytes.Length - 1);
-            return hash;
-        }
+        return location.HashCode == hashCode && SequenceEqual(bytes, location.Name);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -82,5 +79,17 @@ public class DataStructure
         }
 
         return true;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int GenerateHashCode(Span<byte> bytes)
+    {
+        unchecked
+        {
+            int hash = bytes.Length;
+            hash += bytes[0] * (1 << 0);
+            hash += bytes[^1] * (1 << bytes.Length - 1);
+            return hash;
+        }
     }
 }

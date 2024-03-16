@@ -8,7 +8,7 @@ List<TimeSpan> times = new();
 for(var i = 0; i < runs; i++) {
     var stopWatch = new Stopwatch();
     stopWatch.Start();
-    var parser = new Parser(fileName);
+    var parser = new Parser(fileName, Environment.ProcessorCount);
     parser.Run();
     var result = parser.GetResults();
     stopWatch.Stop();

@@ -1,10 +1,12 @@
-﻿namespace _1brc;
+﻿using System.Diagnostics;
+
+namespace _1brc;
 
 public class Unit(string fileName, FileChunk chunk)
 {
     private const byte NewLine = (byte)'\n';
     private const byte Separator = (byte)';';
-    private const ushort ChunkSize = 107;
+    private const int ChunkSize = 1024 * 100;
 
     private readonly DataStructure _data = new();
 
@@ -19,35 +21,44 @@ public class Unit(string fileName, FileChunk chunk)
         reader.Position = chunk.Start;
         Span<byte> buffer = new byte[ChunkSize];
         long end = chunk.Start + chunk.Count;
-        ushort index = 0;
-        ushort separator = 0;
+        int separator = 0;
+        int read;
+        int lastNewLine = 0;
+        double temp;
         while (reader.Position < end)
         {
-            buffer[index] = (byte)reader.ReadByte();
-            if (buffer[index] == Separator)
+            read = reader.Read(buffer);
+            for (var i = 0; i < read; i++)
             {
-                unchecked
+                if (buffer[i] == Separator)
                 {
-                    separator = index;
+                    unchecked
+                    {
+                        separator = i;
+                    }
                 }
-            }
-            else if (buffer[index] == NewLine)
-            {
-                Span<byte> name = buffer.Slice(0, separator);
-                double temp = Helpers.ParseDouble(buffer.Slice(separator + 1, index - separator - 1));
-                _data.Add(name, temp);
-                
-                unchecked
+                else if (buffer[i] == NewLine)
                 {
-                    index = 0;
+                    Span<byte> name = buffer.Slice(lastNewLine, separator - lastNewLine);
+                    temp = Helpers.ParseDouble(buffer.Slice(separator + 1, i - separator - 1));
+                    _data.Add(name, temp);
+                    unchecked
+                    {
+                        lastNewLine = i + 1;
+                    }
                 }
-
-                continue;
             }
 
             unchecked
             {
-                index++;
+                reader.Position -= read - lastNewLine;
+                separator = 0;
+                lastNewLine = 0;
+                
+                if (reader.Position + ChunkSize > end)
+                {
+                    buffer = new byte[end - reader.Position];
+                }
             }
         }
     }
