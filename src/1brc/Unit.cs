@@ -4,6 +4,7 @@ public class Unit(string fileName, FileChunk chunk)
 {
     private const byte NewLine = (byte)'\n';
     private const byte Separator = (byte)';';
+    private const ushort ChunkSize = 107;
 
     private readonly DataStructure _data = new();
 
@@ -16,43 +17,37 @@ public class Unit(string fileName, FileChunk chunk)
     {
         using var reader = Helpers.OpenReader(fileName);
         reader.Position = chunk.Start;
-        Span<byte> buffer = new byte[Helpers.FileBufferSize];
-        long end = (chunk.Start + chunk.Count) - 1;
-        int separator = 0;
-        int read = 0;
-        int lastNewLine = 0;
+        Span<byte> buffer = new byte[ChunkSize];
+        long end = chunk.Start + chunk.Count;
+        ushort index = 0;
+        ushort separator = 0;
         while (reader.Position < end)
         {
-            read = reader.Read(buffer);
-            for (int i = 0; i < read; i++)
-            {
-                if (buffer[i] == Separator)
-                {
-                    unchecked
-                    {
-                        separator = i;
-                    }
-                }
-                else if (buffer[i] == NewLine)
-                {
-                    Span<byte> name = buffer.Slice(lastNewLine, separator - lastNewLine);
-                    double temp = Helpers.ParseDouble(buffer.Slice(separator + 1, i - separator - 1));
-                    _data.Add(name, temp);
-                    unchecked
-                    {
-                        lastNewLine = i + 1;
-                    }
-
-                }
-            }
-            
-            if (lastNewLine > 0)
+            buffer[index] = (byte)reader.ReadByte();
+            if (buffer[index] == Separator)
             {
                 unchecked
                 {
-                    reader.Position -= read - lastNewLine;
-                    lastNewLine = 0;
+                    separator = index;
                 }
+            }
+            else if (buffer[index] == NewLine)
+            {
+                Span<byte> name = buffer.Slice(0, separator);
+                double temp = Helpers.ParseDouble(buffer.Slice(separator + 1, index - separator - 1));
+                _data.Add(name, temp);
+                
+                unchecked
+                {
+                    index = 0;
+                }
+
+                continue;
+            }
+
+            unchecked
+            {
+                index++;
             }
         }
     }
