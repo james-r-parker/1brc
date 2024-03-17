@@ -4,25 +4,25 @@ namespace _1brc;
 
 public class DataStructure
 {
-    private const int Capacity = 10007;
+    private const int Capacity = 20011;
     private readonly List<Location>?[] _data = new List<Location>?[Capacity];
+    private int _count = 0;
 
-    public IEnumerable<Location> GetResults()
+    public IReadOnlyCollection<Location> GetResults()
     {
+        var list = new List<Location>(capacity: _count);
         for (var i = 0; i < Capacity; i++)
         {
             var item = _data[i];
             if (item is not null)
             {
-                foreach (var location in item)
-                {
-                    yield return location;
-                }
+                list.AddRange(item);
             }
         }
+        return list;
     }
 
-    public void Add(Span<byte> name, double temp)
+    public void Add(ReadOnlySpan<byte> name, double temp)
     {
         int hashCode = GenerateHashCode(name);
         int index = Math.Abs(hashCode % Capacity);
@@ -30,66 +30,52 @@ public class DataStructure
 
         if (item is null)
         {
-            var locationName = new byte[name.Length];
-            name.CopyTo(locationName);
-            _data[index] = [new(locationName, hashCode, temp)];
+            var newLocationName = new byte[name.Length];
+            name.CopyTo(newLocationName);
+            _data[index] = new List<Location>(5)
+            {
+                new(newLocationName, hashCode, temp)
+            };
+            _count++;
             return;
         }
 
-        bool found = false;
         for (var i = 0; i < item.Count; i++)
         {
             var location = item[i];
-            if (Equals(location, hashCode, name))
+            if (Equals(hashCode, name, location.HashCode, location.Name))
             {
                 location.Update(temp);
-                found = true;
-                break;
+                return;
             }
         }
 
-        if (!found)
-        {
-            var locationName = new byte[name.Length];
-            name.CopyTo(locationName);
-            item.Add(new(locationName, hashCode, temp));
-        }
+        var locationName = new byte[name.Length];
+        name.CopyTo(locationName);
+        item.Add(new(locationName, hashCode, temp));
+        _count++;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equals(Location location, int hashCode, Span<byte> bytes)
+    private static bool Equals(
+        int newHashCode,
+        ReadOnlySpan<byte> newName,
+        int oldHashCode,
+        ReadOnlySpan<byte> oldName)
     {
-        return location.HashCode == hashCode && SequenceEqual(bytes, location.Name);
+        return newHashCode == oldHashCode && newName.SequenceEqual(oldName);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool SequenceEqual(Span<byte> span, byte[] other)
-    {
-        if (span.Length != other.Length)
-        {
-            return false;
-        }
-
-        for (var i = 0; i < span.Length; i++)
-        {
-            if (span[i] != other[i])
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int GenerateHashCode(Span<byte> bytes)
+    private int GenerateHashCode(ReadOnlySpan<byte> bytes)
     {
         unchecked
         {
-            int hash = bytes.Length;
-            hash += bytes[0] * (1 << 0);
-            hash += bytes[^1] * (1 << bytes.Length - 1);
-            return hash;
+            uint hash = 2166136261U;
+            hash = ((hash * 19) ^ bytes[0]);
+            hash = ((hash * 19) ^ bytes[^2]);
+            hash = ((hash * 19) ^ bytes[^1]);
+            return (int)hash;
         }
     }
 }

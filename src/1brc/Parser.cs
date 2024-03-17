@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 
 namespace _1brc;
 
@@ -16,6 +17,9 @@ public class Parser(string fileName, int threads)
 
     public void Run()
     {
+        var sw = new Stopwatch();
+        sw.Start();
+        Console.WriteLine("Starting Workers");
         foreach (var unit in GetChunks())
         {
             _units.Add(unit);
@@ -25,29 +29,33 @@ public class Parser(string fileName, int threads)
         {
             unit.Thread.Join();
         }
+
+        sw.Stop();
+        Console.WriteLine("Workers: " + sw.ElapsedMilliseconds + "ms");
     }
 
-    public IEnumerable<Output> GetResults()
+    public IReadOnlyCollection<Output> GetResults()
     {
-        var output = new SortedDictionary<string, Output>();
+        var sw = new Stopwatch();
+        sw.Start();
+        var temp = new Dictionary<ReadOnlyMemory<byte>, Output>(1000, new BytesComparer());
 
         foreach (var unit in _units)
         {
             foreach (Location result in unit.Unit.GetResults())
             {
-                var name = Encoding.UTF8.GetString(result.Name);
-                if (output.TryGetValue(name, out var o))
+                if (temp.TryGetValue(result.Name, out var o))
                 {
                     o.Count += result.Count;
-                    o.Min = Math.Min(o.Min, result.Min);
-                    o.Max = Math.Max(o.Max, result.Max);
+                    o.Min = o.Min < result.Min ? o.Min : result.Min;
+                    o.Max = o.Max > result.Max ? o.Max : result.Max;
                     o.Sum += result.Sum;
                 }
                 else
                 {
-                    output.Add(name, new Output()
+                    temp.Add(result.Name, new Output()
                     {
-                        Name = name,
+                        NameBytes = result.Name,
                         Count = result.Count,
                         Min = result.Min,
                         Max = result.Max,
@@ -56,7 +64,14 @@ public class Parser(string fileName, int threads)
                 }
             }
         }
-        
+
+        var output = new SortedDictionary<string, Output>();
+        foreach (var (name, o) in temp)
+        {
+            output.Add(o.Name, o);
+        }
+
+        Console.WriteLine("Results: " + sw.ElapsedMilliseconds + "ms");
         return output.Values;
     }
 

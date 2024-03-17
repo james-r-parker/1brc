@@ -4,7 +4,7 @@ namespace _1brc;
 
 public static class Helpers
 {
-    private const int BufferSize = 1024 * 1024;
+    private const int BufferSize = 1024 * 1024 * 5;
     private const byte DecimalPoint = (byte)'.';
     private const int Minus = (byte)'-';
     private const int Zero = (byte)'0';
@@ -26,9 +26,7 @@ public static class Helpers
     public static double ParseDouble(ReadOnlySpan<byte> bytes)
     {
         var decimalIndex = bytes.IndexOf(DecimalPoint);
-        var isNegative = bytes[0] == Minus;
-
-        if (isNegative)
+        if (bytes[0] == Minus)
         {
             return decimalIndex switch
             {
@@ -45,7 +43,7 @@ public static class Helpers
                            (bytes[decimalIndex - 1] - Zero)
                            + (bytes[decimalIndex + 1] - Zero) * 0.1
                        ),
-                _ => double.Parse(bytes)
+                _ => throw new ApplicationException("Invalid negative number format")
             };
         }
 
@@ -56,7 +54,7 @@ public static class Helpers
                    + (bytes[decimalIndex - 1] - Zero)
                    + (bytes[decimalIndex + 1] - Zero) * 0.1,
             1 => (bytes[decimalIndex - 1] - Zero) + (bytes[decimalIndex + 1] - Zero) * 0.1,
-            _ => double.Parse(bytes)
+            _ => throw new ApplicationException("Invalid negative number format")
         };
     }
 }

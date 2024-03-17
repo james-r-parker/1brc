@@ -1,16 +1,15 @@
-﻿using System.Data;
-using System.Runtime.CompilerServices;
+﻿using System.Text;
 
 namespace _1brc;
 
 public class Output
 {
-    public required string Name { get; set; }
+    public required ReadOnlyMemory<byte> NameBytes { get; init; }
+    public string Name => Encoding.UTF8.GetString(NameBytes.Span);
     public required int Count { get; set; }
     public required double Min { get; set; }
     public required double Max { get; set; }
     public required double Sum { get; set; }
-
     public double Avg => Math.Round(Sum / Count, 2, MidpointRounding.AwayFromZero);
 }
 
