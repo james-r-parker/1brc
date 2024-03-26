@@ -15,22 +15,13 @@ public class Output
 
 public record FileChunk(long Start, long Count);
 
-public class Location
+public class Location(ReadOnlyMemory<byte> name, int hashCode, double temp)
 {
-    public Location(byte[] name, int hashCode, double temp)
-    {
-        Name = name;
-        HashCode = hashCode;
-        Min = temp;
-        Max = temp;
-        Sum = temp;
-    }
-    
-    public readonly byte[] Name;
-    public readonly int HashCode;
-    public double Min;
-    public double Max;
-    public double Sum;
+    public readonly ReadOnlyMemory<byte> Name = name;
+    public readonly int HashCode = hashCode;
+    public double Min = temp;
+    public double Max = temp;
+    public double Sum = temp;
     public int Count = 1;
 
     public void Update(double temp)

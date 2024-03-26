@@ -6,11 +6,10 @@ public class DataStructure
 {
     private const int Capacity = 20011;
     private readonly List<Location>?[] _data = new List<Location>?[Capacity];
-    private int _count = 0;
 
     public IReadOnlyCollection<Location> GetResults()
     {
-        var list = new List<Location>(capacity: _count);
+        var list = new List<Location>(capacity: Capacity / 2);
         for (var i = 0; i < Capacity; i++)
         {
             var item = _data[i];
@@ -22,11 +21,12 @@ public class DataStructure
         return list;
     }
 
-    public void Add(ReadOnlySpan<byte> name, double temp)
+    public void Add(ReadOnlySpan<byte> name, ReadOnlySpan<byte> temp)
     {
         int hashCode = GenerateHashCode(name);
         int index = Math.Abs(hashCode % Capacity);
         var item = _data[index];
+        var temperature = Helpers.ParseDouble(temp);
 
         if (item is null)
         {
@@ -34,26 +34,24 @@ public class DataStructure
             name.CopyTo(newLocationName);
             _data[index] = new List<Location>(5)
             {
-                new(newLocationName, hashCode, temp)
+                new(newLocationName, hashCode, temperature)
             };
-            _count++;
             return;
         }
 
         for (var i = 0; i < item.Count; i++)
         {
             var location = item[i];
-            if (Equals(hashCode, name, location.HashCode, location.Name))
+            if (Equals(hashCode, name, location.HashCode, location.Name.Span))
             {
-                location.Update(temp);
+                location.Update(temperature);
                 return;
             }
         }
 
         var locationName = new byte[name.Length];
         name.CopyTo(locationName);
-        item.Add(new(locationName, hashCode, temp));
-        _count++;
+        item.Add(new(locationName, hashCode, temperature));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

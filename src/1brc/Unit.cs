@@ -22,7 +22,6 @@ public class Unit(string fileName, FileChunk chunk)
         int separator = 0;
         int read;
         int lastNewLine = 0;
-        double temp;
         while (reader.Position < end)
         {
             read = reader.Read(buffer);
@@ -34,9 +33,9 @@ public class Unit(string fileName, FileChunk chunk)
                         separator = i;
                         break;
                     case NewLine:
-                        Span<byte> name = buffer.Slice(lastNewLine, separator - lastNewLine);
-                        temp = Helpers.ParseDouble(buffer.Slice(separator + 1, i - separator - 1));
-                        _data.Add(name, temp);
+                        _data.Add(
+                            buffer.Slice(lastNewLine, separator - lastNewLine), 
+                            buffer.Slice(separator + 1, i - separator - 1));
                         lastNewLine = i + 1;
                         break;
                 }
