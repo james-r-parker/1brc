@@ -1,10 +1,12 @@
-﻿namespace _1brc;
+﻿using System.Buffers;
+
+namespace _1brc;
 
 public class Unit(string fileName, FileChunk chunk)
 {
-    private const byte NewLine = (byte)'\n';
-    private const byte Separator = (byte)';';
-    private const int ChunkSize = 1024 * 128;
+    private const int ChunkSize = 1024 * 32;
+    private static readonly SearchValues<byte> NewLines = SearchValues.Create([(byte)'\n']);
+    private static readonly SearchValues<byte> Separators = SearchValues.Create([(byte)';']);
 
     private readonly DataStructure _data = new();
 
@@ -19,32 +21,31 @@ public class Unit(string fileName, FileChunk chunk)
         reader.Position = chunk.Start;
         Span<byte> buffer = new byte[ChunkSize];
         long end = chunk.Start + chunk.Count;
-        int separator = 0;
-        int read;
         int lastNewLine = 0;
         while (reader.Position < end)
         {
-            read = reader.Read(buffer);
-            for (var i = 0; i < read; i++)
+            var read = reader.Read(buffer);
+
+            while (true)
             {
-                switch (buffer[i])
+                Span<byte> window = buffer.Slice(lastNewLine);
+                int currentNewLine = window.IndexOfAny(NewLines);
+                if (currentNewLine == -1)
                 {
-                    case Separator:
-                        separator = i;
-                        break;
-                    case NewLine:
-                        _data.Add(
-                            buffer.Slice(lastNewLine, separator - lastNewLine), 
-                            buffer.Slice(separator + 1, i - separator - 1));
-                        lastNewLine = i + 1;
-                        break;
+                    break;
                 }
+                
+                int separator = window.IndexOfAny(Separators);
+                
+                _data.Add(
+                    window.Slice(0, separator),
+                    window.Slice(separator + 1, currentNewLine - separator - 1));
+                
+                lastNewLine += currentNewLine + 1;
             }
-
+            
             reader.Position -= read - lastNewLine;
-            separator = 0;
             lastNewLine = 0;
-
             if (reader.Position + ChunkSize > end)
             {
                 buffer = new byte[end - reader.Position];
