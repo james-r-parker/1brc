@@ -39,7 +39,7 @@ A: It's the abbreviation of the project name: **One** **B**illion **R**ow **C**h
 
 * AMD Ryzen 9 7950X3D 16-Core Processor, 64GB RAM (5600MHz),
 * Windows 11 (10.0.22631), .NET 8.0.201
-* Score: 1.28 Seconds
+* Score: 1.25 Seconds
 
 ## 1BRC on the Web
 

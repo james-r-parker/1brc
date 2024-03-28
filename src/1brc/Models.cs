@@ -15,7 +15,7 @@ public class Output
 
 public record FileChunk(long Start, long Count);
 
-public class Location(ReadOnlyMemory<byte> name, int hashCode, double temp)
+public struct Location(ReadOnlyMemory<byte> name, int hashCode, double temp)
 {
     public readonly ReadOnlyMemory<byte> Name = name;
     public readonly int HashCode = hashCode;
@@ -26,12 +26,15 @@ public class Location(ReadOnlyMemory<byte> name, int hashCode, double temp)
 
     public void Update(double temp)
     {
-        unchecked
+        Count++;
+        Sum += temp;
+        if(temp > Max)
         {
-            Count++;
-            Min = Min < temp ? Min : temp;
-            Max = Max > temp ? Max : temp;
-            Sum += temp;
+            Max = temp;
+        }
+        else if(temp < Min)
+        {
+            Min = temp;
         }
     }
 }

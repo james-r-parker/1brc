@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace _1brc;
 
@@ -18,6 +19,7 @@ public class DataStructure
                 list.AddRange(item);
             }
         }
+
         return list;
     }
 
@@ -39,9 +41,10 @@ public class DataStructure
             return;
         }
 
-        for (var i = 0; i < item.Count; i++)
+        var listAsSpan = CollectionsMarshal.AsSpan(item);
+        for (var i = 0; i < listAsSpan.Length; i++)
         {
-            var location = item[i];
+            ref var location = ref listAsSpan[i];
             if (Equals(hashCode, name, location.HashCode, location.Name.Span))
             {
                 location.Update(temperature);
@@ -69,11 +72,10 @@ public class DataStructure
     {
         unchecked
         {
-            uint hash = 2166136261U;
+            int hash = bytes.Length;
             hash = ((hash * 19) ^ bytes[0]);
             hash = ((hash * 19) ^ bytes[^2]);
-            hash = ((hash * 19) ^ bytes[^1]);
-            return (int)hash;
+            return hash;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace _1brc.tests;
 
@@ -36,7 +38,8 @@ public class ParserTests
         {
             var line = reader.ReadLine();
             var parts = line.Split(';');
-            if (data.TryGetValue(parts[0], out var location))
+            ref var location = ref CollectionsMarshal.GetValueRefOrNullRef(data, parts[0]);
+            if (!Unsafe.IsNullRef(ref location))
             {
                 location.Update(double.Parse(parts[1]));
             }
