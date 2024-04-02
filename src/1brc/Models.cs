@@ -10,7 +10,7 @@ public class Output
     public required double Min { get; set; }
     public required double Max { get; set; }
     public required double Sum { get; set; }
-    public double Avg => Math.Round(Sum / Count, 2, MidpointRounding.AwayFromZero);
+    public double Avg => Math.Round(Sum / Count, 1, MidpointRounding.AwayFromZero);
 }
 
 public record FileChunk(long Start, long Count);

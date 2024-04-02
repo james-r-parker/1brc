@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 
 namespace _1brc;
 
@@ -15,11 +14,10 @@ public class Parser(string fileName, int threads)
 
     private readonly List<(Thread Thread, Unit Unit)> _units = [];
 
+    public string Output => GetOutput();
+
     public void Run()
     {
-        var sw = new Stopwatch();
-        sw.Start();
-        Console.WriteLine("Starting Workers");
         foreach (var unit in GetChunks())
         {
             _units.Add(unit);
@@ -29,15 +27,23 @@ public class Parser(string fileName, int threads)
         {
             unit.Thread.Join();
         }
-
-        sw.Stop();
-        Console.WriteLine("Workers: " + sw.ElapsedMilliseconds + "ms");
     }
 
-    public IReadOnlyCollection<Output> GetResults()
+    private string GetOutput()
     {
-        var sw = new Stopwatch();
-        sw.Start();
+        var sb = new StringBuilder("{", 10000);
+        foreach (var result in GetResults())
+        {
+            sb.AppendFormat("{0}={1:0.0}/{2:0.0}/{3:0.0},", result.Name, result.Min, result.Max, result.Avg);
+        }
+
+        sb.Remove(sb.Length - 1, 1);
+        sb.Append('}');
+        return sb.ToString();
+    }
+
+    private IReadOnlyCollection<Output> GetResults()
+    {
         var temp = new Dictionary<ReadOnlyMemory<byte>, Output>(1000, new BytesComparer());
 
         foreach (var unit in _units)
@@ -71,7 +77,6 @@ public class Parser(string fileName, int threads)
             output.Add(o.Name, o);
         }
 
-        Console.WriteLine("Results: " + sw.ElapsedMilliseconds + "ms");
         return output.Values;
     }
 
