@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Text;
 using _1brc;
 
 const string fileName = @"C:\code\1brc\data\measurements-1000000000.txt";
@@ -11,8 +10,7 @@ for(var i = 0; i < runs; i++)
     var stopWatch = new Stopwatch();
     stopWatch.Start();
     var parser = new Parser(fileName, Environment.ProcessorCount);
-    parser.Run();
-    Console.WriteLine(parser.Output);
+    Console.WriteLine(parser.Run());
     stopWatch.Stop();
     times.Add(stopWatch.Elapsed);
     

@@ -21,7 +21,7 @@ public class ParserTests
         var parser = new Parser(FileName, threads);
         parser.Run();
         var result = parser.GetResults();
-        Assert.Equal(1000000, result.Sum(x => x.Count));
+        Assert.Equal(1000000, result.Sum(x => x.Value.Count));
     }
 
     [Theory]
@@ -58,15 +58,15 @@ public class ParserTests
 
         foreach (var name in data.Keys)
         {
-            Assert.Contains(result, x => x.Name == name);
+            Assert.Contains(result, x => x.Key == name);
         }
 
         foreach (var output in result)
         {
-            Assert.Equal(data[output.Name].Min, output.Min, _comparer);
-            Assert.Equal(data[output.Name].Max, output.Max, _comparer);
-            Assert.Equal(Math.Round(data[output.Name].Sum / data[output.Name].Count, 2, MidpointRounding.AwayFromZero), output.Avg, _comparer);
-            Assert.Equal(data[output.Name].Count, output.Count, _comparer);
+            Assert.Equal(data[output.Key].Min, output.Value.Min, _comparer);
+            Assert.Equal(data[output.Key].Max, output.Value.Max, _comparer);
+            Assert.Equal(Math.Round(data[output.Key].Sum / data[output.Key].Count, 2, MidpointRounding.AwayFromZero), output.Value.Avg, _comparer);
+            Assert.Equal(data[output.Key].Count, output.Value.Count, _comparer);
         }
     }
 }

@@ -16,7 +16,7 @@ public class Parser(string fileName, int threads)
 
     public string Output => GetOutput();
 
-    public void Run()
+    public string Run()
     {
         foreach (var unit in GetChunks())
         {
@@ -27,6 +27,8 @@ public class Parser(string fileName, int threads)
         {
             unit.Thread.Join();
         }
+
+        return GetOutput();
     }
 
     private string GetOutput()
@@ -34,7 +36,7 @@ public class Parser(string fileName, int threads)
         var sb = new StringBuilder("{", 10000);
         foreach (var result in GetResults())
         {
-            sb.AppendFormat("{0}={1:0.0}/{2:0.0}/{3:0.0},", result.Name, result.Min, result.Avg, result.Max);
+            sb.AppendFormat("{0}={1:0.0}/{2:0.0}/{3:0.0},", result.Key, result.Value.Min, result.Value.Avg, result.Value.Max);
         }
 
         sb.Remove(sb.Length - 1, 1);
@@ -42,7 +44,7 @@ public class Parser(string fileName, int threads)
         return sb.ToString();
     }
 
-    public IReadOnlyCollection<Output> GetResults()
+    public IReadOnlyDictionary<string, Output> GetResults()
     {
         var temp = new Dictionary<ReadOnlyMemory<byte>, Output>(1000, new BytesComparer());
 
@@ -77,7 +79,7 @@ public class Parser(string fileName, int threads)
             output.Add(o.Name, o);
         }
 
-        return output.Values;
+        return output;
     }
 
     /// <summary>
