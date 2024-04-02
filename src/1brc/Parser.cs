@@ -42,7 +42,7 @@ public class Parser(string fileName, int threads)
         return sb.ToString();
     }
 
-    private IReadOnlyCollection<Output> GetResults()
+    public IReadOnlyCollection<Output> GetResults()
     {
         var temp = new Dictionary<ReadOnlyMemory<byte>, Output>(1000, new BytesComparer());
 
