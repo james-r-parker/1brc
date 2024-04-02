@@ -34,7 +34,7 @@ public class Parser(string fileName, int threads)
         var sb = new StringBuilder("{", 10000);
         foreach (var result in GetResults())
         {
-            sb.AppendFormat("{0}={1:0.0}/{2:0.0}/{3:0.0},", result.Name, result.Min, result.Max, result.Avg);
+            sb.AppendFormat("{0}={1:0.0}/{2:0.0}/{3:0.0},", result.Name, result.Min, result.Avg, result.Max);
         }
 
         sb.Remove(sb.Length - 1, 1);
