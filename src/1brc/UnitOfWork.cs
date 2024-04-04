@@ -2,7 +2,7 @@
 
 namespace _1brc;
 
-public class Unit(string fileName, FileChunk chunk)
+public class UnitOfWork(string fileName, FileChunk chunk)
 {
     private const int ChunkSize = 1024 * 32;
     private static readonly SearchValues<byte> NewLines = SearchValues.Create([(byte)'\n']);

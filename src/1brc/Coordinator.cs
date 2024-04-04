@@ -2,7 +2,7 @@
 
 namespace _1brc;
 
-public class Parser(string fileName, int threads)
+public class Coordinator(string fileName, int threads)
 {
     private const byte NewLine = (byte)'\n';
     private const byte Separator = (byte)';';
@@ -12,44 +12,26 @@ public class Parser(string fileName, int threads)
     private const byte a = (byte)'a';
     private const byte z = (byte)'z';
 
-    private readonly List<(Thread Thread, Unit Unit)> _units = [];
+    private readonly List<(Thread Thread, UnitOfWork Unit)> _units = [];
 
-    public string Output => GetOutput();
+    private string _output = string.Empty;
+    private readonly SortedDictionary<string, Output> _results = new();
+    
+    public string Output => _output;
+    public IReadOnlyDictionary<string, Output> Results => _results;
 
-    public string Run()
+    public void Run()
     {
         foreach (var unit in GetChunks())
         {
             _units.Add(unit);
         }
 
+        var temp = new Dictionary<ReadOnlyMemory<byte>, Output>(1000, new BytesComparer());
         foreach (var unit in _units)
         {
             unit.Thread.Join();
-        }
 
-        return GetOutput();
-    }
-
-    private string GetOutput()
-    {
-        var sb = new StringBuilder("{", 10000);
-        foreach (var result in GetResults())
-        {
-            sb.AppendFormat("{0}={1:0.0}/{2:0.0}/{3:0.0},", result.Key, result.Value.Min, result.Value.Avg, result.Value.Max);
-        }
-
-        sb.Remove(sb.Length - 1, 1);
-        sb.Append('}');
-        return sb.ToString();
-    }
-
-    public IReadOnlyDictionary<string, Output> GetResults()
-    {
-        var temp = new Dictionary<ReadOnlyMemory<byte>, Output>(1000, new BytesComparer());
-
-        foreach (var unit in _units)
-        {
             foreach (Location result in unit.Unit.GetResults())
             {
                 if (temp.TryGetValue(result.Name, out var o))
@@ -72,20 +54,28 @@ public class Parser(string fileName, int threads)
                 }
             }
         }
-
-        var output = new SortedDictionary<string, Output>();
+        
         foreach (var (name, o) in temp)
         {
-            output.Add(o.Name, o);
+            _results.Add(o.Name, o);
         }
 
-        return output;
+        var sb = new StringBuilder("{", 10000);
+        foreach (var result in _results)
+        {
+            sb.AppendFormat("{0}={1:0.0}/{2:0.0}/{3:0.0},", result.Key, result.Value.Min, result.Value.Avg,
+                result.Value.Max);
+        }
+
+        sb.Remove(sb.Length - 1, 1);
+        sb.Append('}');
+        _output = sb.ToString();
     }
 
     /// <summary>
     /// Breaks the file down into chunks for parallel processing.
     /// </summary>
-    private IEnumerable<(Thread Thread, Unit Unit)> GetChunks()
+    private IEnumerable<(Thread Thread, UnitOfWork Unit)> GetChunks()
     {
         using var reader = Helpers.OpenReader(fileName, FileOptions.RandomAccess);
         long chunkSize = reader.Length / threads;
@@ -134,9 +124,13 @@ public class Parser(string fileName, int threads)
         }
     }
 
-    private (Thread Thread, Unit Unit) Start(FileChunk chunk)
+    /// <summary>
+    /// Starts a new unit of work to process a file chunk on a different thread.
+    /// </summary>
+    /// <param name="chunk">The chunk of the file to process in this thread.</param>
+    private (Thread Thread, UnitOfWork Unit) Start(FileChunk chunk)
     {
-        var u = new Unit(fileName, chunk);
+        var u = new UnitOfWork(fileName, chunk);
         var t = new Thread(u.Run)
         {
             Priority = ThreadPriority.AboveNormal

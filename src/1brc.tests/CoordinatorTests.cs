@@ -4,7 +4,7 @@ using System.Text;
 
 namespace _1brc.tests;
 
-public class ParserTests
+public class CoordinatorTests
 {
     private readonly DoubleComparer _comparer = new();
     private const string FileName = @"C:\code\1brc\data\measurements-1000000.txt";
@@ -18,9 +18,9 @@ public class ParserTests
     [InlineData(32)]
     public void Count(int threads)
     {
-        var parser = new Parser(FileName, threads);
+        var parser = new Coordinator(FileName, threads);
         parser.Run();
-        var result = parser.GetResults();
+        var result = parser.Results;
         Assert.Equal(1000000, result.Sum(x => x.Value.Count));
     }
 
@@ -52,9 +52,9 @@ public class ParserTests
 
         Assert.Equal(1000000, data.Select(x => x).Sum(x => x.Value.Count));
 
-        var parser = new Parser(FileName, threads);
+        var parser = new Coordinator(FileName, threads);
         parser.Run();
-        var result = parser.GetResults();
+        var result = parser.Results;
 
         foreach (var name in data.Keys)
         {

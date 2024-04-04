@@ -9,8 +9,9 @@ for(var i = 0; i < runs; i++)
 {
     var stopWatch = new Stopwatch();
     stopWatch.Start();
-    var parser = new Parser(fileName, Environment.ProcessorCount);
-    Console.WriteLine(parser.Run());
+    var parser = new Coordinator(fileName, Environment.ProcessorCount);
+    parser.Run();
+    Console.WriteLine(parser.Output);
     stopWatch.Stop();
     times.Add(stopWatch.Elapsed);
     
