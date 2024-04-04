@@ -16,12 +16,14 @@ public class Coordinator(string fileName, int threads)
 
     private string _output = string.Empty;
     private readonly SortedDictionary<string, Output> _results = new();
-    
+
     public string Output => _output;
     public IReadOnlyDictionary<string, Output> Results => _results;
 
     public void Run()
     {
+        GC.TryStartNoGCRegion(1024 * 1024 * 10, true);
+
         foreach (var unit in GetChunks())
         {
             _units.Add(unit);
@@ -54,7 +56,7 @@ public class Coordinator(string fileName, int threads)
                 }
             }
         }
-        
+
         foreach (var (name, o) in temp)
         {
             _results.Add(o.Name, o);
