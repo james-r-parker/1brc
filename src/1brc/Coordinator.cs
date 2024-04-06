@@ -22,8 +22,6 @@ public class Coordinator(string fileName, int threads)
 
     public void Run()
     {
-        GC.TryStartNoGCRegion(1024 * 1024 * 10, true);
-
         foreach (var unit in GetChunks())
         {
             _units.Add(unit);
