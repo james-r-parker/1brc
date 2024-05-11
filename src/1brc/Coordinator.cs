@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 
 namespace _1brc;
 
@@ -54,7 +55,7 @@ public class Coordinator(string fileName, int threads)
                 }
             }
         }
-
+        
         foreach (var (name, o) in temp)
         {
             _results.Add(o.Name, o);
@@ -81,7 +82,7 @@ public class Coordinator(string fileName, int threads)
         long chunkSize = reader.Length / threads;
         byte[] buffer = new byte[1];
         long start = 0L;
-        reader.Position = chunkSize;
+        reader.Seek(chunkSize, SeekOrigin.Begin);
         while (reader.Read(buffer) > 0)
         {
             if (buffer[0] == Dot)
@@ -91,10 +92,10 @@ public class Coordinator(string fileName, int threads)
                 if (reader.Position + chunkSize > reader.Length)
                 {
                     yield return Start(new FileChunk(start, reader.Length - start));
-                    break;
+                    yield break;
                 }
 
-                reader.Position += chunkSize;
+                reader.Seek(chunkSize, SeekOrigin.Current);
             }
             else if (buffer[0] == NewLine)
             {
@@ -103,10 +104,10 @@ public class Coordinator(string fileName, int threads)
                 if (reader.Position + chunkSize > reader.Length)
                 {
                     yield return Start(new FileChunk(start, reader.Length - start));
-                    break;
+                    yield break;
                 }
 
-                reader.Position += chunkSize;
+                reader.Seek(chunkSize, SeekOrigin.Current);
             }
             else
                 switch (buffer[0])

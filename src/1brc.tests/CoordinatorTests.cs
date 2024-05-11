@@ -46,7 +46,7 @@ public class CoordinatorTests
             else
             {
                 data.Add(parts[0],
-                    new Location(Encoding.UTF8.GetBytes(parts[0]), parts[0].GetHashCode(), double.Parse(parts[1])));
+                    new Location(Encoding.UTF8.GetBytes(parts[0]), double.Parse(parts[1])));
             }
         }
 

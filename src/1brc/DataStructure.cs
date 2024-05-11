@@ -5,7 +5,7 @@ namespace _1brc;
 
 public class DataStructure
 {
-    private const int Capacity = 20011;
+    private const int Capacity = 9973;
     private readonly List<Location>?[] _data = new List<Location>?[Capacity];
 
     public IReadOnlyCollection<Location> GetResults()
@@ -19,14 +19,12 @@ public class DataStructure
                 list.AddRange(item);
             }
         }
-
         return list;
     }
 
     public void Add(ReadOnlySpan<byte> name, ReadOnlySpan<byte> temp)
     {
-        int hashCode = GenerateHashCode(name);
-        int index = Math.Abs(hashCode % Capacity);
+        int index = Math.Abs(GenerateHashCode(name) % Capacity);
         var item = _data[index];
         var temperature = Helpers.ParseDouble(temp);
 
@@ -34,9 +32,9 @@ public class DataStructure
         {
             var newLocationName = new byte[name.Length];
             name.CopyTo(newLocationName);
-            _data[index] = new List<Location>(5)
+            _data[index] = new List<Location>(3)
             {
-                new(newLocationName, hashCode, temperature)
+                new(newLocationName, temperature)
             };
             return;
         }
@@ -45,7 +43,7 @@ public class DataStructure
         for (var i = 0; i < listAsSpan.Length; i++)
         {
             ref var location = ref listAsSpan[i];
-            if (Equals(hashCode, name, location.HashCode, location.Name.Span))
+            if (name.SequenceEqual(location.Name.Span))
             {
                 location.Update(temperature);
                 return;
@@ -54,17 +52,7 @@ public class DataStructure
 
         var locationName = new byte[name.Length];
         name.CopyTo(locationName);
-        item.Add(new(locationName, hashCode, temperature));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool Equals(
-        int newHashCode,
-        ReadOnlySpan<byte> newName,
-        int oldHashCode,
-        ReadOnlySpan<byte> oldName)
-    {
-        return newHashCode == oldHashCode && newName.SequenceEqual(oldName);
+        item.Add(new(locationName, temperature));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
